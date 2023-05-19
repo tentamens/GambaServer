@@ -21,6 +21,8 @@ Data="*res://singletons/retrieveData.gd"
 BallState="*res://singletons/ballState.gd"
 Mines="*res://singletons/Mines.gd"
 NumberRush="*res://singletons/numberRush.gd"
+DataBase="*res://singletons/DataBase.gd"
+LBS="*res://singletons/leaderBoardService.gd"
 
 [editor_plugins]
 

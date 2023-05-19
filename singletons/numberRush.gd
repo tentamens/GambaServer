@@ -16,5 +16,5 @@ func addNumberScore(clientID, numbers):
 
 func checkIfCurrentlyActive(clientID):
 	if numberRushState.has(clientID):
-		return true
-	return false
+		return false
+	return true
