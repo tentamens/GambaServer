@@ -26,8 +26,6 @@ func _ready():
 	multiplayer.peer_disconnected.connect(self.peerDisconnected)
 	start_server()
 
-
-
 func start_server():
 	
 	var port: int = DEFAULTPORT
