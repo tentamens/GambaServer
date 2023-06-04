@@ -7,6 +7,8 @@ func _ready():
 
 func connect2DB():
 	var peer = ENetMultiplayerPeer.new()
+	var secondMultiplayerApi = SceneMultiplayer.new()
+	get_tree().set_multiplayer(secondMultiplayerApi, "/root/db")  
 	peer.create_client('127.0.0.1', 1203)
-	multiplayer.multiplayer_peer = peer
+	secondMultiplayerApi.multiplayer_peer = peer
 	

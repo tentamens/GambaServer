@@ -5,22 +5,10 @@ const DEFAULTPORT: int = 4545
 @export var numberRushOutcomeOdds = 0.5
 
 
-var test: Array = [[131, 1111],[1456, 1132]]
-
 
 func _ready():
 	
-	var random = RandomNumberGenerator.new()
 	
-	var i = 1
-	
-	while i < 10:
-		i += 1
-		var rand = snappedf(random.randf_range(0.1, 1), 0.1)
-		var multi = (1 / (1 + pow(2.7182, (2*(rand * -2.5) + 4)) )) * 3
-		if multi < 1:
-			multi = 0.5
-		print(multi)
 	
 	multiplayer.peer_connected.connect(self._peer_connected)
 	multiplayer.peer_disconnected.connect(self.peerDisconnected)
@@ -29,8 +17,6 @@ func _ready():
 func start_server():
 	
 	var port: int = DEFAULTPORT
-#	var secondMultiplayerApi = SceneMultiplayer.new()
-#	get_tree().set_multiplayer(secondMultiplayerApi, "/root/Server")  
 	var peer = ENetMultiplayerPeer.new()
 	peer.create_server(port)
 	multiplayer.multiplayer_peer = peer
@@ -49,8 +35,9 @@ func peerDisconnected(id:int):
 func serverConnectPlayer(clientID: int, playerName) -> void:
 	
 	clientID = multiplayer.get_remote_sender_id()
-	
-	var UID = str(str(clientID) + str(Time.get_ticks_msec()) + "a")
+	var UID
+	if playerName == null:
+		UID = str(str(clientID) + str(Time.get_ticks_msec()) + "a")
 	
 	var content = 200
 	
@@ -425,6 +412,16 @@ func scoreChange(change, username):
 
 @rpc("unreliable")
 func addScoreChangeUpdate(change,username):
+	pass
+
+@rpc("reliable","any_peer")
+func loadRewardPageReceive(UID):
+	var winnings = JackPot.checkUIDforWinner(UID)
+	rpc_id(multiplayer.get_remote_sender_id(), "loadRewardPageReturn", winnings, JackPot.winnerBoard)
+
+
+@rpc("reliable")
+func loadRewardPageReturn(WinningsInfo, winners):
 	pass
 
 

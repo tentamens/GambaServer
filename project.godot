@@ -23,6 +23,7 @@ Mines="*res://singletons/Mines.gd"
 NumberRush="*res://singletons/numberRush.gd"
 DataBase="*res://singletons/DataBase.gd"
 LBS="*res://singletons/leaderBoardService.gd"
+JackPot="*res://singletons/jackPot.gd"
 
 [editor_plugins]
 
