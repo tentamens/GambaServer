@@ -30,7 +30,7 @@ func loadPlayerScore(clientID):
 	return playersScores[clientID]
 
 func loadPlayerScoreSubtractBet(clientID, currentBet):
-	playersScores[clientID] = playersScores[clientID] - currentBet 
+	playersScores[clientID] = round(playersScores[clientID] - currentBet) 
 
 
 

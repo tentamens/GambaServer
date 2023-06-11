@@ -12,6 +12,7 @@ func timer():
 	timer()
 
 
+var test = [1,2]
 
 func _ready():
 	sortedArray.sort_custom(sort_ascending)
@@ -34,7 +35,10 @@ func loadLeaderBoard():
 
 
 func addNewMember(username, score, UID):
-	sortedArray.insert(sortedArray.bsearch([UID, username]), [score, username, UID])
+	if sortedArray.bsearch([UID]) == sortedArray.size():
+		sortedArray.append([score, username, UID])
+	else:
+		sortedArray[sortedArray.bsearch([UID])] = [score, username, UID]
 	sortedArray.sort_custom(sort_ascending)
 	storeLeaderBoard()
 

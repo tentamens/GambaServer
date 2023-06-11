@@ -1,6 +1,6 @@
 extends Node
 
-const DEFAULTPORT: int = 4545
+const DEFAULTPORT: int = 8080
 
 @export var numberRushOutcomeOdds = 0.5
 
@@ -18,7 +18,9 @@ func start_server():
 	
 	var port: int = DEFAULTPORT
 	var peer = ENetMultiplayerPeer.new()
-	peer.create_server(port)
+	var server_tls_options = TLSOptions.server(load("res://Data/Cerfificatex509_Key.key"), load("res://Data/CerfificateX509_Certificate.crt"))
+	peer.create_server(port, 2000)
+	peer.host.dtls_server_setup(server_tls_options)
 	multiplayer.multiplayer_peer = peer
 	print("server Starting")
 	
@@ -41,9 +43,9 @@ func serverConnectPlayer(clientID: int, playerName) -> void:
 	
 	var content = 200
 	
-	if LBS.sortedArray.find(playerName) != -1:
-		var lbs = LBS.sortedArray
-		lbs[lbs.bsearch(playerName)] = [lbs[0],lbs[1], UID]
+#	if LBS.sortedArray.find(playerName) != -1:
+#		var lbs = LBS.sortedArray
+#		lbs[lbs.bsearch(playerName)] = [lbs[0],lbs[1], UID]
 	
 	Data.playerStateAdd(clientID, content)
 	rpc_id(clientID, "returnUID", UID)
@@ -66,6 +68,7 @@ func calculatePegValue(zone, clientID, num):
 	
 	Score += betValue * multiple
 	
+	Score = round(Score)
 	
 	Data.playerStateAdd(clientID, Score)
 	
@@ -147,17 +150,20 @@ func betMinesRequestSend(currentBet):
 	if score <= currentBet or currentBet == 0:
 		return
 	
-	
+	# all the buttons
 	var nums = [1,2,4,5,6,7,8,9,10,11,12,13,14,15]
 	
-	var numbers = [[],[],[], []]
+	# players mini game data
+	var numbers = [[],[],[],[],[]]
 	
 	numbers[3] = currentBet
+	
+	numbers[4] = 1.0
 	
 	var i = 0
 	while i < 5:
 		
-		if i < 3:
+		if i < 2:
 			var numberAdded = nums.pick_random()
 			numbers[0].append(numberAdded)
 			nums.erase(numberAdded)
@@ -173,11 +179,10 @@ func betMinesRequestSend(currentBet):
 		nums.erase(numberAdded)
 		
 		
-		
 		i += 1
 		
 	
-	
+	score = round(score)
 	Mines.addMineScore(clientID,numbers)
 	
 
@@ -201,22 +206,25 @@ func clickMineProcessSend(num: int):
 	
 	# no gain or loss was clicked
 	if result == 4:
+		numbers[4] += 0.5
+		Mines.addMineScore(clientID,numbers)
+		rpc_id(clientID, "clickMineProcessSendReturn", null, null, null, numbers[4], null)
 		return
-	
 	
 	# lose all
 	if result == 2:
 		var score = Data.loadPlayerScore(clientID)
 		
+		
 		score -= numbers[3]
 		
-		
+		score = round(score)
 		Data.playerStateAdd(clientID, score)
 		Mines.mineStateSubtract(clientID)
 		
 		score = Data.loadPlayerScore(clientID)
 		
-		rpc_id(clientID, "clickMineProcessSendReturn", score, num, result)
+		rpc_id(clientID, "clickMineProcessSendReturn", score, num, result, 0, numbers)
 		return
 	
 	
@@ -227,21 +235,31 @@ func clickMineProcessSend(num: int):
 	Mines.addMineScore(clientID,numbers)
 	
 	
-	var earnings = numbers[3] * scoreMultiplyer
+	
+	var earnings = (numbers[3] * scoreMultiplyer) * numbers[4]
+	
+	
 	
 	score -= numbers[3]
 	
-	score += (numbers[3] * scoreMultiplyer)
+	score += (numbers[3] * scoreMultiplyer) * numbers[4]
+	
+	numbers[4] += 0.25
 	
 	numbers[3] = earnings
+	score = round(score)
 	Data.playerStateAdd(clientID, score)
 	
-	rpc_id(clientID, "clickMineProcessSendReturn", score, num, result)
 	
+	#number[4] = multiplyer
+	rpc_id(clientID, "clickMineProcessSendReturn", score, num, result, numbers[4], null)
+	
+
+
 
 
 @rpc("reliable")
-func clickMineProcessSendReturn(score, num, result):
+func clickMineProcessSendReturn(score, num, result, multiplyer, fullBoard):
 	pass
 
 func calcMineResult(numbers, num):
@@ -294,7 +312,7 @@ func numberRushBetRequestRecieve(currentBet):
 	
 	var multi = (1 / (1 + pow(2.7182, (2*(rand * -2.5) + 4)) )) * 3
 	
-	print(multi)
+	
 	
 	if multi < 1:
 		multi = 0.5
@@ -314,7 +332,7 @@ func numberRushBetRequestRecieve(currentBet):
 	
 	numberRushOutcome += 1
 	
-	numberRushOutcome = snapped(numberRushOutcome, 0.01)
+	numberRushOutcome = snapped(numberRushOutcome, 0.05)
 	
 	NumberRush.addNumberScore(clientID, [numberRushOutcome, currentBet])
 	
@@ -341,6 +359,7 @@ func numberRushUpdateProccessReceive(currentMultiple):
 	var score = Data.loadPlayerScore(clientID)
 	
 	score -= state[1]
+	score = round(score)
 	Data.loadPlayerScoreSubtractBet(clientID, state[1])
 	NumberRush.numberStateSubtract(clientID)
 	
@@ -375,6 +394,7 @@ func NumberRushCashOutRecieve(currentMultiple):
 	
 	score -= state[1]
 	score += state[1] * currentMultiple
+	score = round(score)
 	
 	Data.playerStateAdd(clientID, score)
 	
