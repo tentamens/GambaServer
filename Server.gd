@@ -430,7 +430,7 @@ func cashOutRequestRecieve(UID, username):
 func scoreChange(change, username):
 	rpc("addScoreChangeUpdate", change, username)
 
-@rpc("unreliable")
+@rpc("reliable")
 func addScoreChangeUpdate(change,username):
 	pass
 
