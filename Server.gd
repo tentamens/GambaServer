@@ -1,6 +1,6 @@
 extends Node
 
-const DEFAULTPORT: int = 8080
+const DEFAULTPORT: int = 4545
 
 @export var numberRushOutcomeOdds = 0.5
 
