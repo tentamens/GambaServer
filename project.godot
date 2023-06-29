@@ -25,6 +25,7 @@ NumberRush="*res://singletons/numberRush.gd"
 DataBase="*res://singletons/DataBase.gd"
 LBS="*res://singletons/leaderBoardService.gd"
 JackPot="*res://singletons/jackPot.gd"
+Db="*res://singletons/db.gd"
 
 [editor_plugins]
 

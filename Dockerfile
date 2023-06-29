@@ -1,9 +1,7 @@
 FROM fedora:36
 
-WORKDIR /usr/src/app
+WORKDIR /root
 
-ENV PORT 8080
-ENV HOST 0.0.0.0
 
 ENV DOTNET_NOLOGO=1
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -32,7 +30,7 @@ RUN dnf -y install --setopt=install_weak_deps=False \
      unzip Godot_v4.0.2-stable_linux.x86_64.zip && \
      rm -f Godot_v4.0.2-stable_linux.x86_64.zip 
     
-RUN ls -lha
+RUN ls -lha 
 
 COPY . ./app
 CMD [ "/root/Godot_v4.0.2-stable_linux.x86_64", "--display-driver", "headless", "--path", "/root/app" ]

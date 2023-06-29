@@ -15,10 +15,9 @@ func _ready():
 	start_server()
 
 func start_server():
-	
 	var port: int = DEFAULTPORT
 	var peer = ENetMultiplayerPeer.new()
-	var server_tls_options = TLSOptions.server(load("res://Data/Cerfificatex509_Key.key"), load("res://Data/CerfificateX509_Certificate.crt"))
+	var server_tls_options = TLSOptions.server(load("res://Data/game-server.key"), load("res://Data/game-server.crt"))
 	peer.create_server(port, 2000)
 	peer.host.dtls_server_setup(server_tls_options)
 	multiplayer.multiplayer_peer = peer
@@ -28,6 +27,7 @@ func start_server():
 
 func _peer_connected(id:int):
 	pass
+
 
 func peerDisconnected(id:int):
 	Data.playerStateSubtract(id)
@@ -56,6 +56,7 @@ func serverConnectPlayer(clientID: int, playerName) -> void:
 func returnUID(UID):
 	pass
 
+
 @rpc("any_peer", "reliable")
 func calculatePegValue(zone, clientID, num):
 	
@@ -81,10 +82,6 @@ func updateScore(score):
 	pass
 
 
-
-
-
-
 func getMultiple(zone):
 	if zone == "far":
 		return 10
@@ -94,6 +91,7 @@ func getMultiple(zone):
 		return 3
 	if zone == "middle":
 		return 0.2
+
 
 @rpc("any_peer", "reliable")
 func genData(clientID):
@@ -136,6 +134,7 @@ func requestBallSpawnSend(currentBet):
 @rpc("reliable")
 func requestBallSpawnReturn(Info):
 	pass
+
 
 @rpc("any_peer","reliable")
 func betMinesRequestSend(currentBet):
@@ -185,8 +184,6 @@ func betMinesRequestSend(currentBet):
 	score = round(score)
 	Mines.addMineScore(clientID,numbers)
 	
-
-
 
 
 @rpc("any_peer", "reliable")
@@ -262,6 +259,7 @@ func clickMineProcessSend(num: int):
 func clickMineProcessSendReturn(score, num, result, multiplyer, fullBoard):
 	pass
 
+
 func calcMineResult(numbers, num):
 	if numbers[0].has(num):
 		return 0
@@ -271,13 +269,14 @@ func calcMineResult(numbers, num):
 		return 2
 	return 4
 
+
 @rpc("any_peer", "reliable")
 func cashOutMinesRecieve():
 	var clientID = multiplayer.get_remote_sender_id()
 	
 	Mines.mineStateSubtract(clientID)
 	
-	
+
 
 @rpc("any_peer", "reliable")
 func pillarBetRequestRecieve(currentBet):
@@ -301,6 +300,7 @@ func pillarBetRequestRecieve(currentBet):
 #@rpc("unreliable")
 #func pillarBetRequestReturn(outcome):
 #	pass
+
 
 @rpc("any_peer", "reliable")
 func numberRushBetRequestRecieve(currentBet):
@@ -339,6 +339,7 @@ func numberRushBetRequestRecieve(currentBet):
 	rpc_id(clientID, "numberRushBetRequestReturn")
 	
 
+
 @rpc("reliable")
 func numberRushBetRequestReturn():
 	pass
@@ -365,7 +366,6 @@ func numberRushUpdateProccessReceive(currentMultiple):
 	
 	rpc_id(clientID, "numberRushCrash", score)
 	
-
 
 
 @rpc("reliable")
@@ -410,10 +410,9 @@ func numberRushWin(score, outcome):
 
 
 @rpc("any_peer", "reliable")
-func getLeaderBoardSend():
+func getLeaderBoardSend(Score):
 	var clientId = multiplayer.get_remote_sender_id()
-	var leaderBoard = LBS.sortedArray
-	rpc_id(clientId, "getLeaderBoardReturn", leaderBoard)
+	rpc_id(clientId, "getLeaderBoardReturn", LBS.publicLB)
 
 
 @rpc("reliable")
@@ -427,12 +426,15 @@ func cashOutRequestRecieve(UID, username):
 	var score = Data.loadPlayerScore(clientId)
 	LBS.addNewMember(username, score, UID)
 
+
 func scoreChange(change, username):
 	rpc("addScoreChangeUpdate", change, username)
+
 
 @rpc("reliable")
 func addScoreChangeUpdate(change,username):
 	pass
+
 
 @rpc("reliable","any_peer")
 func loadRewardPageReceive(UID):
@@ -444,4 +446,46 @@ func loadRewardPageReceive(UID):
 func loadRewardPageReturn(WinningsInfo, winners):
 	pass
 
+
+var loggedIn = false
+var loggedInId
+var password = "ThisIsTheTempPassword"
+var id = "{79a73c27-d8a6-11ed-ac67-806e6f6e6963}"
+
+
+
+@rpc("reliable", "any_peer")
+func signIn(Userpassword, ident):
+	if Userpassword == password and id == str(ident):
+		loggedInId = multiplayer.get_remote_sender_id()
+		loggedIn = true
+		print("logged in")
+
+
+@rpc("reliable", "any_peer")
+func addGiftCard(giftcard, passwords, ids):
+	print("hello")
+	if loggedIn == false:
+		return
+	print(checkCrediention(ids, passwords))
+	if checkCrediention(ids, passwords) == false:
+		return
+	
+	JackPot.addNewRewards(giftcard)
+
+
+@rpc("reliable","any_peer")
+func logout():
+	loggedIn == false
+
+
+func checkCrediention(ident, Userpassword):
+	if id != str(ident):
+		return false
+	
+	if Userpassword == password:
+		
+		return true
+	
+	return false
 
